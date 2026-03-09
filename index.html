@@ -7,7 +7,16 @@
   <style>
     :root{--bg1:#86B6EE;--bg2:#77A9E3;--ok:#67C46A;--bad:#E46A86;--ink:#2E4F86}
     *{box-sizing:border-box} body{margin:0;font-family:"Noto Sans TC",system-ui;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
-    .wrap{max-width:980px;margin:0 auto;padding:14px}
+    .wrap{max-width:980px;margin:0 auto;padding:14px;position:relative;z-index:2}
+    .scene{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+    .sun{position:absolute;right:40px;top:30px;width:120px;height:120px;border-radius:50%;background:#FFD84D;box-shadow:0 0 0 12px #ffe88a88}
+    .cloud{position:absolute;background:#ffffffcc;border-radius:999px;height:34px}
+    .cloud:before,.cloud:after{content:'';position:absolute;background:#ffffffcc;border-radius:50%}
+    .cloud:before{width:34px;height:34px;left:10px;top:-14px}
+    .cloud:after{width:42px;height:42px;left:34px;top:-20px}
+    .cloud.c1{top:54px;left:60px;width:110px}
+    .cloud.c2{top:96px;left:220px;width:130px}
+    .grass{position:absolute;left:0;right:0;bottom:0;height:28vh;min-height:170px;background:linear-gradient(#74cc66,#59b64c)}
     .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.card{background:#EAF3FF;border:1px solid #9EC1ED;border-radius:14px;padding:10px;text-align:center;font-weight:700;box-shadow:0 2px 8px #204b8f2b}
     .card b{display:block;font-size:1.6rem;color:#3769A8}
     .target{margin:12px 0;background:#EAF3FF;border:1px solid #9EC1ED;border-radius:18px;padding:12px;text-align:center;box-shadow:0 2px 8px #204b8f2b}
@@ -29,6 +38,12 @@
   </style>
 </head>
 <body>
+<div class="scene" aria-hidden="true">
+  <div class="sun"></div>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="grass"></div>
+</div>
 <div class="wrap">
   <h2>🌈 字母數字快打 60秒</h2>
   <div class="stats">
