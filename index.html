@@ -63,18 +63,44 @@ const numMap={0:'zero',1:'one',2:'two',3:'three',4:'four',5:'five',6:'six',7:'se
 const rows=[['1','2','3','4','5','6','7','8','9','0'],['Q','W','E','R','T','Y','U','I','O','P'],['A','S','D','F','G','H','J','K','L'],['Z','X','C','V','B','N','M']];
 const el={time:time,score:score,hit:hit,miss:miss,best:best,target:target,fb:fb,speakText:speakText,history:history,kbd:kbd};
 let st={playing:false,timer:60,score:0,hit:0,miss:0,target:'A',it:null};
+let speechQueue=[];
+let speaking=false;
 
 function buildKeyboard(){el.kbd.innerHTML='';rows.forEach((r,ri)=>{const row=document.createElement('div');row.className='row';r.forEach((k,i)=>{const b=document.createElement('button');b.className=`key rainbow-${(i+ri)%8}`;b.dataset.k=k;b.textContent=k;b.onclick=()=>onInput(k);row.appendChild(b)});el.kbd.appendChild(row)});}
 function setStat(){el.time.textContent=st.timer;el.score.textContent=st.score;el.hit.textContent=st.hit;el.miss.textContent=st.miss;el.best.textContent=localStorage.getItem('kids_best')||0;}
 function pick(){st.target=CHARS[Math.floor(Math.random()*CHARS.length)];el.target.textContent=st.target;el.speakText.textContent=`請按：${st.target}`;highlight();speak(st.target)}
 function highlight(){document.querySelectorAll('.key').forEach(k=>k.classList.toggle('active',k.dataset.k===st.target));}
-function beep(freq=600,dur=0.08){const ac=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=freq;g.gain.value=.12;o.start();setTimeout(()=>{o.stop();ac.close();},dur*1000)}
-function speak(ch){if(!('speechSynthesis'in window))return; const u=new SpeechSynthesisUtterance(/\d/.test(ch)?numMap[ch]:ch.toLowerCase());u.lang='en-US';u.rate=0.95;u.pitch=1.2;u.volume=1;window.speechSynthesis.cancel();window.speechSynthesis.speak(u)}
-function onInput(k){if(!st.playing)return; if(k===st.target){st.score+=10;st.hit++;el.fb.textContent='太棒了！';el.fb.className='feedback ok';beep(900);pick();} else {st.score=Math.max(0,st.score-2);st.miss++;el.fb.textContent='再試一次';el.fb.className='feedback bad';beep(220,.12);} setStat();}
+function tone(ac,freq,start,dur,type='square',vol=.12){const o=ac.createOscillator();const g=ac.createGain();o.type=type;o.frequency.value=freq;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(vol,start);g.gain.exponentialRampToValueAtTime(0.001,start+dur);o.start(start);o.stop(start+dur)}
+function sfxCoin(){const ac=new (window.AudioContext||window.webkitAudioContext)();const t=ac.currentTime+0.01; tone(ac,988,t,0.06,'triangle',.11); tone(ac,1319,t+0.06,0.06,'triangle',.11); tone(ac,1568,t+0.12,0.08,'triangle',.11); setTimeout(()=>ac.close(),350)}
+function sfxWrong(){const ac=new (window.AudioContext||window.webkitAudioContext)();const t=ac.currentTime+0.01; tone(ac,220,t,0.08,'sawtooth',.10); tone(ac,170,t+0.08,0.10,'sawtooth',.10); setTimeout(()=>ac.close(),300)}
+function pickVoice(){
+  const vs=window.speechSynthesis?.getVoices?.()||[];
+  return vs.find(v=>v.lang?.startsWith('en') && /Samantha|Karen|Moira|Ava|Google US English/i.test(v.name))
+      || vs.find(v=>v.lang?.startsWith('en'))
+      || null;
+}
+function speakNow(text){
+  if(!('speechSynthesis' in window)) return;
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US';
+  u.rate=0.82; // 稍慢避免前段咬字不清
+  u.pitch=1.05;
+  u.volume=1;
+  const v=pickVoice(); if(v) u.voice=v;
+  u.onend=()=>{speaking=false; if(speechQueue.length) speakNow(speechQueue.shift());};
+  speaking=true;
+  window.speechSynthesis.speak(u);
+}
+function speak(ch){
+  const text=/\d/.test(ch)?numMap[ch]:ch.toLowerCase();
+  if(speaking){ speechQueue.push(text); return; }
+  speakNow(text);
+}
+function onInput(k){if(!st.playing)return; if(k===st.target){st.score+=10;st.hit++;el.fb.textContent='太棒了！';el.fb.className='feedback ok';sfxCoin();pick();} else {st.score=Math.max(0,st.score-2);st.miss++;el.fb.textContent='再試一次';el.fb.className='feedback bad';sfxWrong();} setStat();}
 function saveResult(){const best=Math.max(Number(localStorage.getItem('kids_best')||0),st.score);localStorage.setItem('kids_best',String(best));const list=JSON.parse(localStorage.getItem('kids_hist')||'[]');const rate=st.hit+st.miss?Math.round(st.hit*100/(st.hit+st.miss)):0;list.unshift({t:new Date().toLocaleString('zh-TW'),s:st.score,r:rate});localStorage.setItem('kids_hist',JSON.stringify(list.slice(0,10)));}
 function renderHistory(){const list=JSON.parse(localStorage.getItem('kids_hist')||'[]');el.history.innerHTML=list.map((x,i)=>`${i+1}. ${x.t}｜${x.s}分｜命中率 ${x.r}%`).join('<br>')||'尚無紀錄';}
-function endGame(){clearInterval(st.it);st.playing=false;saveResult();setStat();renderHistory();el.fb.textContent=`時間到！本局 ${st.score} 分`;el.fb.className='feedback ok';speak('good job');}
-function start(){clearInterval(st.it);st={...st,playing:true,timer:60,score:0,hit:0,miss:0};setStat();pick();el.fb.textContent='';st.it=setInterval(()=>{st.timer--;setStat();if(st.timer<=0)endGame();},1000)}
+function endGame(){clearInterval(st.it);st.playing=false;saveResult();setStat();renderHistory();el.fb.textContent=`時間到！本局 ${st.score} 分`;el.fb.className='feedback ok';speechQueue=[];speaking=false;window.speechSynthesis?.cancel();speakNow('good job');}
+function start(){clearInterval(st.it);st={...st,playing:true,timer:60,score:0,hit:0,miss:0};speechQueue=[];speaking=false;window.speechSynthesis?.cancel();setStat();pick();el.fb.textContent='';st.it=setInterval(()=>{st.timer--;setStat();if(st.timer<=0)endGame();},1000)}
 
 document.addEventListener('keydown',e=>{const k=e.key.toUpperCase();if(CHARS.includes(k))onInput(k)});
 startBtn.onclick=start; restartBtn.onclick=start;
