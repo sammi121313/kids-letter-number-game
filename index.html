@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>字母數字快打 60秒</title>
+  <style>
+    :root{--bg1:#7c3aed;--bg2:#06b6d4;--ok:#22c55e;--bad:#ef4444}
+    *{box-sizing:border-box} body{margin:0;font-family:"Noto Sans TC",system-ui;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#fff}
+    .wrap{max-width:980px;margin:0 auto;padding:14px}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.card{background:#ffffff25;border-radius:14px;padding:10px;text-align:center;font-weight:700}
+    .card b{display:block;font-size:1.6rem}
+    .target{margin:12px 0;background:#ffffff20;border-radius:18px;padding:12px;text-align:center}
+    .char{font-size:120px;line-height:1;font-weight:900;text-shadow:0 4px 0 #0003}
+    .hint{font-size:22px;font-weight:800}
+    .feedback{height:38px;text-align:center;font-size:28px;font-weight:900}
+    .ok{color:var(--ok)} .bad{color:var(--bad)}
+    .actions{display:flex;justify-content:center;gap:10px;margin:8px 0 12px}
+    button{border:0;border-radius:12px;padding:10px 16px;font-size:18px;font-weight:800;cursor:pointer}
+    .primary{background:#f59e0b;color:#fff}
+    .layout{background:#ffffff20;border-radius:16px;padding:10px}
+    .row{display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+    .key{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;background:#ffffff30;box-shadow:0 2px 0 #0003}
+    .rainbow-0{background:#ef4444}.rainbow-1{background:#f97316}.rainbow-2{background:#eab308}.rainbow-3{background:#22c55e}.rainbow-4{background:#06b6d4}.rainbow-5{background:#3b82f6}.rainbow-6{background:#8b5cf6}.rainbow-7{background:#ec4899}
+    .active{outline:4px solid #fff;transform:scale(1.08)}
+    .history{margin-top:10px;background:#ffffff18;border-radius:12px;padding:10px}
+    .small{font-size:13px;opacity:.9}
+    @media (max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.char{font-size:86px}.key{width:44px;height:44px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h2>🌈 字母數字快打 60秒</h2>
+  <div class="stats">
+    <div class="card">⏱ 剩餘<b id="time">60</b></div>
+    <div class="card">⭐ 分數<b id="score">0</b></div>
+    <div class="card">✅ 答對<b id="hit">0</b></div>
+    <div class="card">❌ 答錯<b id="miss">0</b></div>
+    <div class="card">🏆 最高<b id="best">0</b></div>
+  </div>
+
+  <div class="target">
+    <div class="char" id="target">A</div>
+    <div class="hint" id="speakText">A</div>
+  </div>
+  <div class="feedback" id="fb"></div>
+  <div class="actions">
+    <button class="primary" id="startBtn">開始遊戲</button>
+    <button id="restartBtn">重新開始</button>
+  </div>
+
+  <div class="layout" id="kbd"></div>
+
+  <div class="history">
+    <b>最近 10 局</b>
+    <div id="history" class="small"></div>
+  </div>
+</div>
+
+<script>
+const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
+const numMap={0:'zero',1:'one',2:'two',3:'three',4:'four',5:'five',6:'six',7:'seven',8:'eight',9:'nine'};
+const rows=[['1','2','3','4','5','6','7','8','9','0'],['Q','W','E','R','T','Y','U','I','O','P'],['A','S','D','F','G','H','J','K','L'],['Z','X','C','V','B','N','M']];
+const el={time:time,score:score,hit:hit,miss:miss,best:best,target:target,fb:fb,speakText:speakText,history:history,kbd:kbd};
+let st={playing:false,timer:60,score:0,hit:0,miss:0,target:'A',it:null};
+
+function buildKeyboard(){el.kbd.innerHTML='';rows.forEach((r,ri)=>{const row=document.createElement('div');row.className='row';r.forEach((k,i)=>{const b=document.createElement('button');b.className=`key rainbow-${(i+ri)%8}`;b.dataset.k=k;b.textContent=k;b.onclick=()=>onInput(k);row.appendChild(b)});el.kbd.appendChild(row)});}
+function setStat(){el.time.textContent=st.timer;el.score.textContent=st.score;el.hit.textContent=st.hit;el.miss.textContent=st.miss;el.best.textContent=localStorage.getItem('kids_best')||0;}
+function pick(){st.target=CHARS[Math.floor(Math.random()*CHARS.length)];el.target.textContent=st.target;el.speakText.textContent=`請按：${st.target}`;highlight();speak(st.target)}
+function highlight(){document.querySelectorAll('.key').forEach(k=>k.classList.toggle('active',k.dataset.k===st.target));}
+function beep(freq=600,dur=0.08){const ac=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=freq;g.gain.value=.12;o.start();setTimeout(()=>{o.stop();ac.close();},dur*1000)}
+function speak(ch){if(!('speechSynthesis'in window))return; const u=new SpeechSynthesisUtterance(/\d/.test(ch)?numMap[ch]:ch.toLowerCase());u.lang='en-US';u.rate=0.95;u.pitch=1.2;u.volume=1;window.speechSynthesis.cancel();window.speechSynthesis.speak(u)}
+function onInput(k){if(!st.playing)return; if(k===st.target){st.score+=10;st.hit++;el.fb.textContent='太棒了！';el.fb.className='feedback ok';beep(900);pick();} else {st.score=Math.max(0,st.score-2);st.miss++;el.fb.textContent='再試一次';el.fb.className='feedback bad';beep(220,.12);} setStat();}
+function saveResult(){const best=Math.max(Number(localStorage.getItem('kids_best')||0),st.score);localStorage.setItem('kids_best',String(best));const list=JSON.parse(localStorage.getItem('kids_hist')||'[]');const rate=st.hit+st.miss?Math.round(st.hit*100/(st.hit+st.miss)):0;list.unshift({t:new Date().toLocaleString('zh-TW'),s:st.score,r:rate});localStorage.setItem('kids_hist',JSON.stringify(list.slice(0,10)));}
+function renderHistory(){const list=JSON.parse(localStorage.getItem('kids_hist')||'[]');el.history.innerHTML=list.map((x,i)=>`${i+1}. ${x.t}｜${x.s}分｜命中率 ${x.r}%`).join('<br>')||'尚無紀錄';}
+function endGame(){clearInterval(st.it);st.playing=false;saveResult();setStat();renderHistory();el.fb.textContent=`時間到！本局 ${st.score} 分`;el.fb.className='feedback ok';speak('good job');}
+function start(){clearInterval(st.it);st={...st,playing:true,timer:60,score:0,hit:0,miss:0};setStat();pick();el.fb.textContent='';st.it=setInterval(()=>{st.timer--;setStat();if(st.timer<=0)endGame();},1000)}
+
+document.addEventListener('keydown',e=>{const k=e.key.toUpperCase();if(CHARS.includes(k))onInput(k)});
+startBtn.onclick=start; restartBtn.onclick=start;
+buildKeyboard(); setStat(); renderHistory(); pick();
+</script>
+</body>
+</html>
