@@ -5,25 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>字母數字快打 60秒</title>
   <style>
-    :root{--bg1:#7c3aed;--bg2:#06b6d4;--ok:#22c55e;--bad:#ef4444}
-    *{box-sizing:border-box} body{margin:0;font-family:"Noto Sans TC",system-ui;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#fff}
+    :root{--bg1:#F6E7CB;--bg2:#D8ECF3;--ok:#5BAA6F;--bad:#D86A6A;--ink:#3D2F2F}
+    *{box-sizing:border-box} body{margin:0;font-family:"Noto Sans TC",system-ui;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--ink)}
     .wrap{max-width:980px;margin:0 auto;padding:14px}
-    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.card{background:#ffffff25;border-radius:14px;padding:10px;text-align:center;font-weight:700}
-    .card b{display:block;font-size:1.6rem}
-    .target{margin:12px 0;background:#ffffff20;border-radius:18px;padding:12px;text-align:center}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.card{background:#fff8ee;border:1px solid #eadcc8;border-radius:14px;padding:10px;text-align:center;font-weight:700;box-shadow:0 2px 8px #00000014}
+    .card b{display:block;font-size:1.6rem;color:#5d4a3f}
+    .target{margin:12px 0;background:#fff8ee;border:1px solid #eadcc8;border-radius:18px;padding:12px;text-align:center;box-shadow:0 2px 8px #00000014}
     .char{font-size:120px;line-height:1;font-weight:900;text-shadow:0 4px 0 #0003}
     .hint{font-size:22px;font-weight:800}
     .feedback{height:38px;text-align:center;font-size:28px;font-weight:900}
     .ok{color:var(--ok)} .bad{color:var(--bad)}
     .actions{display:flex;justify-content:center;gap:10px;margin:8px 0 12px}
     button{border:0;border-radius:12px;padding:10px 16px;font-size:18px;font-weight:800;cursor:pointer}
-    .primary{background:#f59e0b;color:#fff}
-    .layout{background:#ffffff20;border-radius:16px;padding:10px}
+    .primary{background:#d29a6a;color:#fff}
+    .layout{background:#fff8ee;border:1px solid #eadcc8;border-radius:16px;padding:10px}
     .row{display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap}
-    .key{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;background:#ffffff30;box-shadow:0 2px 0 #0003}
-    .rainbow-0{background:#ef4444}.rainbow-1{background:#f97316}.rainbow-2{background:#eab308}.rainbow-3{background:#22c55e}.rainbow-4{background:#06b6d4}.rainbow-5{background:#3b82f6}.rainbow-6{background:#8b5cf6}.rainbow-7{background:#ec4899}
-    .active{outline:4px solid #fff;transform:scale(1.08)}
-    .history{margin-top:10px;background:#ffffff18;border-radius:12px;padding:10px}
+    .key{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#4a3c35;background:#f7eadb;box-shadow:0 2px 0 #cdbba6}
+    .rainbow-0{background:#f4d8c6}.rainbow-1{background:#f7e7c6}.rainbow-2{background:#f1e7d8}.rainbow-3{background:#e4efd9}.rainbow-4{background:#d9ecf1}.rainbow-5{background:#d8e3f3}.rainbow-6{background:#e3dbf0}.rainbow-7{background:#f0dbe8}
+    .active{outline:4px solid #c58d5f;transform:scale(1.08)}
+    .history{margin-top:10px;background:#fff8ee;border:1px solid #eadcc8;border-radius:12px;padding:10px}
     .small{font-size:13px;opacity:.9}
     @media (max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}.char{font-size:86px}.key{width:44px;height:44px}}
   </style>
